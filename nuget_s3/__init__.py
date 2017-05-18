@@ -5,6 +5,7 @@ import zipfile
 import xml.etree.ElementTree
 import six
 import boto3
+import botocore
 from flask import Flask, Response, abort, send_file
 from cgi import escape
 
@@ -88,7 +89,7 @@ def metadata():
 
 @app.route('/<path:path>')
 def route(path):
-    print(path)
+    # print(path)
     if path.startswith('Packages(Id='):
         return metadata(path)
     if path.endswith('.nupkg'):
@@ -106,7 +107,13 @@ def package(path):
 def metadata(path):
     buffer = six.BytesIO()
     package, version = re.match(r"Packages\(Id='(.*)',Version='(.*)'.*\)", path).groups()
-    s3_client.download_fileobj(s3_bucket, '{}.{}.nupkg'.format(package, version), buffer)
+    try:
+        s3_client.download_fileobj(s3_bucket, '{}.{}.nupkg'.format(package, version), buffer)
+    except botocore.exceptions.ClientError as e:
+        error_code = int(e.response['Error']['Code'])
+        if error_code == 404:
+            return abort(404)
+        raise
     buffer.seek(0)
     with zipfile.ZipFile(buffer, 'r', allowZip64=True) as zip:
         e = xml.etree.ElementTree.parse(six.BytesIO(zip.read('{}.nuspec'.format(package)))).getroot()
