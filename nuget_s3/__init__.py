@@ -87,6 +87,25 @@ def metadata():
 </edmx:DataServices>
 </edmx:Edmx>'''
 
+
+@app.route('/FindPackagesById()')
+def FindPackagesById():
+    ''' ?id='id' '''
+    ret = r'''<?xml version="1.0" ?>
+<feed xml:base="http://www.nuget.org/api/v2" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+	<m:count>0</m:count>
+	<id>http://schemas.datacontract.org/2004/07/</id>
+	<title/>
+	<updated>2017-05-18T18:51:51Z</updated>
+	<link href="http://www.nuget.org/api/v2/Packages" rel="self"/>
+	<author>
+		<name/>
+	</author>
+</feed>'''
+
+    return Response(ret, mimetype='application/atom+xml')
+
+
 @app.route('/<path:path>')
 def route(path):
     # print(path)
