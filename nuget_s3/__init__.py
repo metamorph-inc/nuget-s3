@@ -14,9 +14,11 @@ app = Flask(__name__)
 s3_client = boto3.client('s3')
 s3_bucket = 'nuget-packages.metamorphsoftware.com'
 
+
 @app.route("/")
 def root():
     return "Nuget store"
+
 
 @app.route('/$metadata')
 def metadata():
@@ -90,17 +92,17 @@ def metadata():
 
 @app.route('/FindPackagesById()')
 def FindPackagesById():
-    ''' ?id='id' '''
+    """ ?id='id' """
     ret = r'''<?xml version="1.0" ?>
 <feed xml:base="http://www.nuget.org/api/v2" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
-	<m:count>0</m:count>
-	<id>http://schemas.datacontract.org/2004/07/</id>
-	<title/>
-	<updated>2017-05-18T18:51:51Z</updated>
-	<link href="http://www.nuget.org/api/v2/Packages" rel="self"/>
-	<author>
-		<name/>
-	</author>
+    <m:count>0</m:count>
+    <id>http://schemas.datacontract.org/2004/07/</id>
+    <title/>
+    <updated>2017-05-18T18:51:51Z</updated>
+    <link href="http://www.nuget.org/api/v2/Packages" rel="self"/>
+    <author>
+        <name/>
+    </author>
 </feed>'''
 
     return Response(ret, mimetype='application/atom+xml')
@@ -110,7 +112,7 @@ def FindPackagesById():
 def route(path):
     # print(path)
     if path.startswith('Packages(Id='):
-        return metadata(path)
+        return package_metadata(path)
     if path.endswith('.nupkg'):
         return package(path)
     return abort(404)
@@ -123,7 +125,8 @@ def package(path):
     # TODO last_modified=
     return send_file(buffer, mimetype='application/zip')
 
-def metadata(path):
+
+def package_metadata(path):
     buffer = six.BytesIO()
     package, version = re.match(r"Packages\(Id='(.*)',Version='(.*)'.*\)", path).groups()
     try:
@@ -143,51 +146,51 @@ def metadata(path):
     metadata['s3_bucket'] = s3_bucket
     ret = (r'''<?xml version="1.0" ?>
 <entry xml:base="https://www.nuget.org/api/v2" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
-	<id>https://www.nuget.org/api/v2/Packages(Id='{id}',Version='{version}')</id>
-	<category scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" term="NuGetGallery.OData.V2FeedPackage"/>
-	<link href="https://www.nuget.org/api/v2/Packages(Id='{id}',Version='{version}')" rel="edit"/>
-	<link href="https://www.nuget.org/api/v2/Packages(Id='{id}',Version='{version}')" rel="self"/>
-	<title type="text">{id}</title>
-	<summary type="text">{description}</summary>
-	<updated>2000-01-01T01:01:01Z</updated>
-	<author>
-		<name>{authors}</name>
-	</author>
-	<content src="https://{s3_bucket}/{id}.{version}.nupkg" type="application/zip"/>
-	<m:properties>
-		<d:Id>{id}</d:Id>
-		<d:Version>{version}</d:Version>
-		<d:NormalizedVersion>{version}</d:NormalizedVersion>
-		<d:Authors>{authors}</d:Authors>
-		<d:Copyright>{copyright}</d:Copyright>
-		<d:Created m:type="Edm.DateTime">2000-01-01T01:01:01Z</d:Created>
-		<d:Dependencies></d:Dependencies>
-		<d:Description>{description}</d:Description>
-		<d:DownloadCount m:type="Edm.Int32">1</d:DownloadCount>
-		<d:GalleryDetailsUrl>https://www.nuget.org/packages/{id}/{version}</d:GalleryDetailsUrl>
-		<d:IconUrl>{iconUrl}</d:IconUrl>
-		<d:IsLatestVersion m:type="Edm.Boolean">true</d:IsLatestVersion>
-		<d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
-		<d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
-		<d:Language m:null="true"/>
-		<d:LastUpdated m:type="Edm.DateTime">2000-01-01T01:01:01Z</d:LastUpdated>
-		<d:Published m:type="Edm.DateTime">2000-01-01T01:01:01Z</d:Published>''' +
-		# <d:PackageHash>O5SaKtrHoZwyL9xMi1Q/Buaz7kjLE3E3Q4q//fZGnaaJ/sNMUM0jK5WYgqyFJvv2K4DjpJHJ7eAW/bJQ+aXmdg==</d:PackageHash>
-		# <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
-		# <d:PackageSize m:type="Edm.Int64">87671</d:PackageSize>
-		# <d:ReportAbuseUrl>https://www.nuget.org/packages/{id}/{version}/ReportAbuse</d:ReportAbuseUrl>
-		r'''<d:ProjectUrl>http://{id}.sourceforge.net/</d:ProjectUrl>
-		<d:ReleaseNotes>{releaseNotes}</d:ReleaseNotes>
-		<d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
-		<d:Summary>{description}</d:Summary>
-		<d:Tags></d:Tags>
-		<d:Title>{id}</d:Title>
-		<d:VersionDownloadCount m:type="Edm.Int32">2</d:VersionDownloadCount>
-		<d:MinClientVersion m:null="true"/>
-		<d:LastEdited m:null="true"/>
-		<d:LicenseUrl>{licenseUrl}</d:LicenseUrl>
-		<d:LicenseNames m:null="true"/>
-		<d:LicenseReportUrl m:null="true"/>
+    <id>https://www.nuget.org/api/v2/Packages(Id='{id}',Version='{version}')</id>
+    <category scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" term="NuGetGallery.OData.V2FeedPackage"/>
+    <link href="https://www.nuget.org/api/v2/Packages(Id='{id}',Version='{version}')" rel="edit"/>
+    <link href="https://www.nuget.org/api/v2/Packages(Id='{id}',Version='{version}')" rel="self"/>
+    <title type="text">{id}</title>
+    <summary type="text">{description}</summary>
+    <updated>2000-01-01T01:01:01Z</updated>
+    <author>
+        <name>{authors}</name>
+    </author>
+    <content src="https://{s3_bucket}/{id}.{version}.nupkg" type="application/zip"/>
+    <m:properties>
+        <d:Id>{id}</d:Id>
+        <d:Version>{version}</d:Version>
+        <d:NormalizedVersion>{version}</d:NormalizedVersion>
+        <d:Authors>{authors}</d:Authors>
+        <d:Copyright>{copyright}</d:Copyright>
+        <d:Created m:type="Edm.DateTime">2000-01-01T01:01:01Z</d:Created>
+        <d:Dependencies></d:Dependencies>
+        <d:Description>{description}</d:Description>
+        <d:DownloadCount m:type="Edm.Int32">1</d:DownloadCount>
+        <d:GalleryDetailsUrl>https://www.nuget.org/packages/{id}/{version}</d:GalleryDetailsUrl>
+        <d:IconUrl>{iconUrl}</d:IconUrl>
+        <d:IsLatestVersion m:type="Edm.Boolean">true</d:IsLatestVersion>
+        <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">true</d:IsAbsoluteLatestVersion>
+        <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
+        <d:Language m:null="true"/>
+        <d:LastUpdated m:type="Edm.DateTime">2000-01-01T01:01:01Z</d:LastUpdated>
+        <d:Published m:type="Edm.DateTime">2000-01-01T01:01:01Z</d:Published>''' +
+        # <d:PackageHash>O5SaKtrHoZwyL9xMi1Q/Buaz7kjLE3E3Q4q//fZGnaaJ/sNMUM0jK5WYgqyFJvv2K4DjpJHJ7eAW/bJQ+aXmdg==</d:PackageHash>
+        # <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
+        # <d:PackageSize m:type="Edm.Int64">87671</d:PackageSize>
+        # <d:ReportAbuseUrl>https://www.nuget.org/packages/{id}/{version}/ReportAbuse</d:ReportAbuseUrl>
+        r'''<d:ProjectUrl>http://{id}.sourceforge.net/</d:ProjectUrl>
+        <d:ReleaseNotes>{releaseNotes}</d:ReleaseNotes>
+        <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
+        <d:Summary>{description}</d:Summary>
+        <d:Tags></d:Tags>
+        <d:Title>{id}</d:Title>
+        <d:VersionDownloadCount m:type="Edm.Int32">2</d:VersionDownloadCount>
+        <d:MinClientVersion m:null="true"/>
+        <d:LastEdited m:null="true"/>
+        <d:LicenseUrl>{licenseUrl}</d:LicenseUrl>
+        <d:LicenseNames m:null="true"/>
+        <d:LicenseReportUrl m:null="true"/>
         </m:properties>
     </entry>
     ''').format(**metadata)
