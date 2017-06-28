@@ -139,7 +139,7 @@ def package_metadata(path):
     buffer.seek(0)
     with zipfile.ZipFile(buffer, 'r', allowZip64=True) as zip:
         e = xml.etree.ElementTree.parse(six.BytesIO(zip.read('{}.nuspec'.format(package)))).getroot()
-        metadata = {re.sub('{.*?}', '', el.tag): escape(el.text) for el in e.find('{http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd}metadata')}
+        metadata = {re.sub('{.*?}', '', el.tag): escape(el.text or '') for el in e.find('{http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd}metadata')}
         # {'projectUrl': 'https://svn.isis.vanderbilt.edu/META/trunk', 'owners': 'ksmyth', 'requireLicenseAcceptance': 'false', 'description': 'CadCreoParametricCreateAssembly',
         # 'copyright': 'Copyright 2013 ISIS, Vanderbilt University', 'title': 'CadCreoParametricCreateAssembly', 'releaseNotes': 'Initial release', 'iconUrl': 'http://repo.isis.vanderbilt.edu/GME/GME.ico',
         # 'version': '1.5.15.45-gita34e3610', 'licenseUrl': 'https://svn.isis.vanderbilt.edu/META/trunk/license.txt', 'authors': 'ISIS, Vanderbilt University', 'id': 'META.CadCreoParametricCreateAssembly'}
