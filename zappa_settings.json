@@ -4,6 +4,6 @@
         "s3_bucket": "nuget.metamorphsoftware.com",
         "domain": "nuget.metamorphsoftware.com",
         "lets_encrypt_key": "account.key",
-        "aws_region": "us-east-2"
+        "aws_region": "us-east-1"
     }
 }
