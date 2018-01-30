@@ -150,6 +150,8 @@ def package_metadata(path):
     metadata.setdefault('licenseUrl', '')
     metadata.setdefault('copyright', '')
     metadata.setdefault('iconUrl', '')
+    metadata.setdefault('releaseNotes', '')
+    metadata.setdefault('projectUrl', '')
 
     metadata['s3_bucket'] = s3_bucket
     ret = (r'''<?xml version="1.0" ?>
@@ -187,7 +189,7 @@ def package_metadata(path):
         # <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
         # <d:PackageSize m:type="Edm.Int64">87671</d:PackageSize>
         # <d:ReportAbuseUrl>https://www.nuget.org/packages/{id}/{version}/ReportAbuse</d:ReportAbuseUrl>
-        r'''<d:ProjectUrl>http://{id}.sourceforge.net/</d:ProjectUrl>
+        r'''<d:ProjectUrl>{projectUrl}</d:ProjectUrl>
         <d:ReleaseNotes>{releaseNotes}</d:ReleaseNotes>
         <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
         <d:Summary>{description}</d:Summary>
