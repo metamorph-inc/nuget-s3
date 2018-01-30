@@ -147,6 +147,10 @@ def package_metadata(path):
         # {'projectUrl': 'https://svn.isis.vanderbilt.edu/META/trunk', 'owners': 'ksmyth', 'requireLicenseAcceptance': 'false', 'description': 'CadCreoParametricCreateAssembly',
         # 'copyright': 'Copyright 2013 ISIS, Vanderbilt University', 'title': 'CadCreoParametricCreateAssembly', 'releaseNotes': 'Initial release', 'iconUrl': 'http://repo.isis.vanderbilt.edu/GME/GME.ico',
         # 'version': '1.5.15.45-gita34e3610', 'licenseUrl': 'https://svn.isis.vanderbilt.edu/META/trunk/license.txt', 'authors': 'ISIS, Vanderbilt University', 'id': 'META.CadCreoParametricCreateAssembly'}
+    metadata.setdefault('licenseUrl', '')
+    metadata.setdefault('copyright', '')
+    metadata.setdefault('iconUrl', '')
+
     metadata['s3_bucket'] = s3_bucket
     ret = (r'''<?xml version="1.0" ?>
 <entry xml:base="https://www.nuget.org/api/v2" xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
