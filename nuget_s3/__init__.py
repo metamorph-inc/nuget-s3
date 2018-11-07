@@ -139,10 +139,15 @@ def package_metadata(path):
     buffer.seek(0)
     with zipfile.ZipFile(buffer, 'r', allowZip64=True) as zip:
         e = xml.etree.ElementTree.parse(six.BytesIO(zip.read('{}.nuspec'.format(package)))).getroot()
-        metadata = e.find('{http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd}metadata')
-        if not metadata:
-            # try different xsd date
-            metadata = e.find('{http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd}metadata')
+        root_schema = ''
+        schema_search = re.search('{(.*)}', e.tag)
+        if schema_search:
+            root_schema = schema_search.group(1)
+        for schema in (root_schema, "http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd", "http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd",
+                "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd", "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"):
+            metadata = e.find('{{{}}}metadata'.format(schema))
+            if metadata:
+                break
         metadata = {re.sub('{.*?}', '', el.tag): escape(el.text or '') for el in metadata}
         # {'projectUrl': 'https://svn.isis.vanderbilt.edu/META/trunk', 'owners': 'ksmyth', 'requireLicenseAcceptance': 'false', 'description': 'CadCreoParametricCreateAssembly',
         # 'copyright': 'Copyright 2013 ISIS, Vanderbilt University', 'title': 'CadCreoParametricCreateAssembly', 'releaseNotes': 'Initial release', 'iconUrl': 'http://repo.isis.vanderbilt.edu/GME/GME.ico',
