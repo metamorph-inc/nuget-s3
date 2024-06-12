@@ -1,9 +1,11 @@
 {
     "production": {
-        "app_function": "nuget_s3.app",
+        "app_function": "nuget_s3.handler.app",
+        "lambda_handler": "zappa.handler.lambda_handler",
         "s3_bucket": "nuget.metamorphsoftware.com",
         "domain": "nuget.metamorphsoftware.com",
         "lets_encrypt_key": "account.key",
+        "runtime": "python3.8",
         "aws_region": "us-east-1"
     }
 }
